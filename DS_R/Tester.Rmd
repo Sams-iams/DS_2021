@@ -1,0 +1,372 @@
+---
+title: "Figures"
+author: "Sammie Foley"
+date: "15/11/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(ggplot2)
+library(popbio)
+library(dplyr)
+library(patchwork)
+library(DHARMa)
+library(mgcv)
+library(fitdistrplus)
+library(goft)
+library(gamlss)
+library(viridis)
+library(tidyverse)
+```
+
+```{r}
+data <- read.csv("collection_data_copy.csv")
+
+data <- data %>%
+rename("Y_II_PAM" = "Y_II..PAM.") 
+```
+
+```{r}
+data <- data %>%
+filter(event == "pre_stress"| event == "post_stress_1"| event == "post_stress_4") %>%
+  mutate(event = fct_relevel(event, "pre_stress", "post_stress_1", "post_stress_4"))
+
+
+```
+view(data)
+
+```{r}
+control_data <- data %>%
+filter(treatment == "control")
+
+high_data <- data %>%
+filter(treatment == "high")
+
+mid_data <- data %>%
+filter(treatment == "mid")
+
+low_data <-data %>%
+filter(treatment == "low")
+```
+
+
+```{r}
+control_plot <- ggplot(control_data, aes(x= species, y = Y_II_PAM, fill = event)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(Control)") +
+  theme_bw()
+
+low_plot <- ggplot(low_data, aes(x= species, y = Y_II_PAM, fill = event)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(Low)") +
+  theme_bw()
+
+mid_plot <- ggplot(mid_data, aes(x= species, y = Y_II_PAM, fill = event)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(Mid)") +
+  theme_bw()
+
+
+high_plot <- ggplot(high_data, aes(x= species, y = Y_II_PAM, fill = event)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(High)") +
+  theme_bw()
+  
+
+
+control_plot + low_plot + mid_plot + high_plot
+
+
+```
+
+```{r}
+
+all_data <- read.csv("collection_data_copy.csv")
+
+all_data <- all_data %>%
+rename("Y_II_PAM" = "Y_II..PAM.") 
+
+all_data <- all_data %>%
+mutate(event = fct_relevel(event, "pre_stress", "post_stress_1", "post_stress_2", "post_stress_3", "post_stress_4", "post_stress_5")) %>% 
+mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+
+ch1_data <- all_data %>%
+  filter(species == "cham") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_4") 
+  
+
+ca1_data <- all_data %>%
+  filter(species == "calli") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_4")
+
+chi1_data <- all_data %>%
+  filter(species == "chillensis") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_4")
+
+ca_data <- all_data %>%
+  filter(species == "calli")
+
+chil_data <- all_data %>%
+  filter(species == "chillensis")
+
+
+L_ch_plot <- ggplot(ch1_data, aes(x= event, y = Y_II_PAM, fill = treatment)) +
+  geom_boxplot() + 
+  ylab("Photoefficiency (\u0394 F/Fm)") +
+  xlab("Event") +
+  labs(fill = "Treatment")+
+  scale_x_discrete(labels = c('Pre-stress','Day 1 Post-stress','Day 4 Post-stress')) + 
+  theme_classic() +
+  ggtitle("Chamberlanium tumidum") + 
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) + 
+  scale_colour_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'))
+
+L_ca_plot <- ggplot(ca1_data, aes(x= event, y = Y_II_PAM, fill = treatment)) +
+  geom_boxplot() + 
+  ylab("Photoefficiency (\u0394 F/Fm)") +
+  xlab("Event") +
+  labs(fill = "Treatment")+
+  scale_x_discrete(labels = c('Pre-stress','Day 1 Post-stress','Day 4 Post-stress')) + 
+  theme_classic() +
+  ggtitle("Calliarthron tuberculosum") + 
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) + 
+  scale_colour_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'))
+
+L_chi_plot <- ggplot(chi1_data, aes(x= event, y = Y_II_PAM, fill = treatment)) +
+  geom_boxplot() + 
+  ylab("Photoefficiency (\u0394 F/Fm)") +
+  xlab("Event") +
+  labs(fill = "Treatment")+
+  scale_x_discrete(labels = c('Pre-stress','Day 1 Post-stress','Day 4 Post-stress')) + 
+  theme_classic() +
+  ggtitle("Corallina chilensis") + 
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) + 
+  scale_colour_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'))
+
+L_ch_plot + L_ca_plot + L_chi_plot
+
+
+ggsave(L_ch_plot, filename = "chamberlanium_plot.jpg")
+
+ggsave(L_ca_plot, filename = "calliarthron_plot.jpg")
+
+ggsave(L_chi_plot, filename = "corallina_plot.jpg")
+```
+
+```{r}
+#+++++++++++++++++++++++++
+# Function to calculate the mean and the standard deviation
+  # for each group
+#+++++++++++++++++++++++++
+# data : a data frame
+# varname : the name of a column containing the variable
+  #to be summariezed
+# groupnames : vector of column names to be used as
+  # grouping variables
+```
+
+```{r}
+library(dplyr)
+ch_data$event <- as.factor(ch_data$event)
+head(ch_data)
+
+ch_data_summary <- function(ch_data, Y_II_PAM, treatment){
+  require(plyr)
+  summary_func <-function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  ch_data_sum<-ddply(ch_data, treatment, .fun=summary_func,
+                  Y_II_PAM)
+  ch_data_sum <- rename(ch_data_sum, c("mean" = Y_II_PAM))
+ return(ch_data_sum)
+}
+```
+
+```{r}
+ca_data$event <- as.factor(ca_data$event)
+head(ca_data)
+
+ca_data_summary <- function(ca_data, Y_II_PAM, treatment){
+  require(plyr)
+  summary_func <-function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  ca_data_sum<-ddply(ca_data, treatment, .fun=summary_func,
+                  Y_II_PAM)
+  ca_data_sum <- rename(ca_data_sum, c("mean" = Y_II_PAM))
+ return(ca_data_sum)
+}
+
+```
+
+```{r}
+ch_f <- ch_data_summary(ch_data, Y_II_PAM ="Y_II_PAM", 
+                    treatment =c("treatment", "event"))
+# Convert dose to a factor variable
+ch_f$event=as.factor(ch_f$event)
+
+head(ch_f)
+
+```
+
+```{r}
+ca_f <- ca_data_summary(ca_data, Y_II_PAM ="Y_II_PAM", 
+                    treatment =c("treatment", "event"))
+# Convert dose to a factor variable
+ca_f$event=as.factor(ca_f$event)
+
+head(ca_f)
+
+```
+
+```{r}
+cham_plot<- ggplot(ch_f, aes(x= event, y= Y_II_PAM, group= treatment, color=treatment)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin=Y_II_PAM-sd, ymax=Y_II_PAM+sd), width=.05,
+                 position=position_dodge(0.01))
+
+cham_plot
+```
+```{r}
+ca_plot<- ggplot(ca_f, aes(x= event, y= Y_II_PAM, group= treatment, color=treatment)) + 
+  geom_line() +
+  geom_point()+
+  geom_errorbar(aes(ymin=Y_II_PAM-sd, ymax=Y_II_PAM+sd), width=.05,
+                 position=position_dodge(0.01))
+
+ca_plot
+```
+
+```{r}
+sd_data <- data %>%
+  mutate(sd)
+```
+
+
+
+
+
+```{r}
+high_data_ch <- high_data %>%
+filter(species == "cham")
+
+shapiro.test(data$Y_II_PAM)
+#data is not normal p<0.05
+
+descdist(data$Y_II_PAM)
+
+kruskal.test(Y_II_PAM ~ event, data = high_data_ch)
+
+ggplot(high_data, aes(x= event, y = Y_II_PAM, fill = species)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(High)") +
+  theme_bw()
+
+```
+
+```{r}
+high_data_ch <- high_data %>%
+filter(species == "cham")
+
+shapiro.test(data$Y_II_PAM)
+#data is not normal p<0.05
+
+descdist(data$Y_II_PAM)
+
+kruskal.test(Y_II_PAM ~ event, data = control_data_ch)
+
+dunnTest(Y_II_PAM ~ event, data = control_data_ch)
+
+
+mid_data_ch <- mid_data %>%
+  filter(species == "cham")
+
+low_data_ch <- low_data %>%
+  filter(species == "cham")
+
+control_data_ch <- control_data %>%
+  filter(species == "cham")
+
+
+ggplot(mid_data_ch, aes(x= event, y = Y_II_PAM, fill = species)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(High)") +
+  theme_bw()
+
+```
+
+```{r}
+boxplot(Temp~event,
+data=airquality,
+main="Different boxplots for each month",
+xlab="Month Number",
+ylab="Degree Fahrenheit",
+col="orange",
+border="brown"
+)
+```
+
+
+```{r}
+high_data_ch <- high_data %>%
+filter(species == "cham")
+
+shapiro.test(data$Y_II_PAM)
+#data is not normal p<0.05
+
+descdist(data$Y_II_PAM)
+
+kruskal.test(Y_II_PAM ~ event, data = control_data_ch)
+
+library(FSA) 
+library(fGarch)
+library(LambertW)
+library(patchwork)
+library(tidyverse)
+
+dunnTest(Y_II_PAM ~ event, data = control_data_ch)
+
+
+mid_data_ch <- mid_data %>%
+  filter(species == "cham")
+
+low_data_ch <- low_data %>%
+  filter(species == "cham")
+
+control_data_ch <- control_data %>%
+  filter(species == "cham") 
+
+ggplot(mid_data_ch, aes(x= event, y = Y_II_PAM, fill = species)) +
+  geom_boxplot() + 
+  ylab("Fv/Fm") +
+  xlab("Species(High)") +
+  theme_bw()
+
+```
+
+```{r}
+shapiro.test(control_data, )
+```
+
+
+ggsave(plot, filename = "plot.pdf")
+
+```{r}
+
+```
+
+
