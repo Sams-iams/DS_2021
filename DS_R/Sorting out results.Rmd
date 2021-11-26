@@ -1,0 +1,96 @@
+---
+title: "Results Stat Analysis"
+author: "Lucy"
+date: "25/11/2021"
+output: pdf_document
+---
+
+Load libraries:
+```{r, include=FALSE}
+library(ggplot2)
+library(popbio)
+library(dplyr)
+library(patchwork)
+library(DHARMa)
+library(mgcv)
+library(fitdistrplus)
+library(goft)
+library(gamlss)
+library(viridis)
+library(tidyverse)
+```
+
+Load in data and rename PAM column:
+```{r}
+data <- read.csv("test_data_NOV25.csv")
+data <- data %>%
+rename("Y_II_PAM" = "Y_II..PAM.") 
+```
+
+Setting up data with PAM columns only:
+```{r}
+data_to_model <- data %>%
+  unite(id, species, species_card, sep = '_', remove = F) %>%
+  dplyr::select("date","yellow_tub","species_card","species","number","treatment","name","event","Y_II_PAM","id") %>%
+  mutate(id = as.factor(id))
+```
+
+re-ordering event for graphing later:
+```{r}
+data_to_model <- data_to_model %>% mutate(event = fct_relevel(event, "pre_stress", "post_stress", "post_stress_1", "post_stress_2", "post_stress_3", "post_stress_4", "post_stress_5", "post_stress_6","post_stress_7"))
+```
+
+testing for normality:
+```{r}
+shapiro.test(data_to_model$Y_II_PAM)
+
+#not normal P=3.09e-08
+```
+
+Cullen & Frey graph:
+```{r}
+descdist(data_to_model$Y_II_PAM)
+```
+Looks like it might be a gamma/lognormal/weibull
+
+Look at histograms to find distribution:
+```{r}
+mGA <- histDist(data_to_model$Y_II_PAM, "GA", density = T, main = "Gamma")
+mlN <- histDist(data_to_model$Y_II_PAM, "LOGNO", density = T, main = "lNorm")
+mWE <- histDist(data_to_model$Y_II_PAM, "WEI", density = T, main = "Weibull")
+mNO <- histDist(data_to_model$Y_II_PAM, "NO", density = T, main = "Normal")
+```
+```{r}
+GAIC(mGA, mlN, mWE, mNO, mSEP2)
+#these give us negative values, which fit is best????
+```
+
+
+```{r}
+fitDist(Y_II_PAM, data = data_to_model, type = "realAll", try.gamlss = T)
+```
+
+Trying skewed exponential power type 2:
+```{r}
+mSEP2 <- histDist(data_to_model$Y_II_PAM, "SEP2", density = T, main = "SEP2")
+```
+Decided to move forward exploring SEP2 and WEI distributions:
+```{r}
+mod_SEP2 <- gamlssML(Y_II_PAM ~ species + treatment*event + random(id), family = SEP2(), data = data_to_model, method = nlminb())
+
+summary(mod_SEP2)
+```
+Model using WEI-
+```{r}
+mod_WEI <- gamlss(Y_II_PAM ~ species + treatment*event + random(id), family = WEI(), data = data_to_model, method = RS(), control = gamlss.control())
+
+summary(mod_WEI)
+```
+
+Line-range plot--
+```{r}
+
+```
+
+
+
