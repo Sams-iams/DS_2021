@@ -1,0 +1,376 @@
+---
+title: "Results Stat Analysis"
+author: "Lucy"
+date: "25/11/2021"
+output: pdf_document
+---
+
+Load libraries:
+```{r, include=FALSE}
+library(ggplot2)
+library(popbio)
+library(dplyr)
+library(patchwork)
+library(DHARMa)
+library(mgcv)
+library(fitdistrplus)
+library(goft)
+library(gamlss)
+library(viridis)
+library(tidyverse)
+```
+
+Load in data and rename PAM column:
+```{r}
+data <- read.csv("test_data_NOV25.csv")
+data <- data %>%
+rename("Y_II_PAM" = "Y_II..PAM.") 
+```
+
+Setting up data with PAM columns only:
+```{r}
+data_to_model <- data %>%
+  unite(id, species, species_card, sep = '_', remove = F) %>%
+  dplyr::select("date","yellow_tub","species_card","species","number","treatment","name","event","Y_II_PAM","id") %>%
+  mutate(id = as.factor(id))
+```
+
+re-ordering event for graphing later:
+```{r}
+data_to_model <- data_to_model %>% mutate(event = fct_relevel(event, "pre_stress", "post_stress", "post_stress_1", "post_stress_2", "post_stress_3", "post_stress_4", "post_stress_5", "post_stress_6","post_stress_7"))
+```
+
+testing for normality:
+```{r}
+shapiro.test(data_to_model$Y_II_PAM)
+
+#not normal P=3.09e-08
+```
+
+Cullen & Frey graph:
+```{r}
+descdist(data_to_model$Y_II_PAM)
+```
+Looks like it might be a gamma/lognormal/weibull
+
+Look at histograms to find distribution:
+```{r}
+mGA <- histDist(data_to_model$Y_II_PAM, "GA", density = T, main = "Gamma")
+mlN <- histDist(data_to_model$Y_II_PAM, "LOGNO", density = T, main = "lNorm")
+mWE <- histDist(data_to_model$Y_II_PAM, "WEI", density = T, main = "Weibull")
+mNO <- histDist(data_to_model$Y_II_PAM, "NO", density = T, main = "Normal")
+```
+```{r}
+GAIC(mGA, mlN, mWE, mNO, mSEP2)
+#these give us negative values, which fit is best????
+```
+
+
+```{r}
+fitDist(Y_II_PAM, data = data_to_model, type = "realAll", try.gamlss = T)
+```
+
+Trying skewed exponential power type 2:
+```{r}
+mSEP2 <- histDist(data_to_model$Y_II_PAM, "SEP2", density = T, main = "SEP2")
+```
+Decided to move forward exploring SEP2 and WEI distributions:
+```{r}
+mod_SEP2 <- gamlss(Y_II_PAM ~ species + treatment*event + random(id), family = SEP2(), data = data_to_model, control = gamlss.control(n.cyc = 200))
+
+summary(mod_SEP2)
+```
+Model using WEI-
+```{r}
+mod_WEI <- gamlss(Y_II_PAM ~ species + treatment*event + random(id), family = WEI(), data = data_to_model, method = RS(), control = gamlss.control())
+
+summary(mod_WEI)
+```
+```{r}
+#seeing if stepGAIC makes a simpler model
+step_mod <- stepGAIC(mod_WEI, direction = "backward", trace = F)
+formula(step_mod)
+step_mod$anova
+summary(step_mod)
+```
+modelling stripped down data-just 3 days:
+```{r}
+simpler_data <- data_to_model %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7")
+
+simpler_mod_WEI <- gamlss(Y_II_PAM ~ species + treatment*event + random(id), family = WEI(), data = simpler_data, method = RS(), control = gamlss.control())
+
+summary(simpler_mod_WEI)
+```
+
+box plot for chamberlanium--
+```{r}
+ch_f <- filter(data_to_model, species == "cham") %>%
+  na.omit()
+
+ch_f$event = as.factor(ch_f$event)
+
+ch_f <- ch_f %>% mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+head(ch_f)
+
+cham_plot<- ggplot(ch_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
+  geom_boxplot()
+  
+cham_plot
+```
+box plot for calliarthron--
+```{r}
+calli_f <- filter(data_to_model, species == "calli ") %>%
+  na.omit()
+
+calli_f$event = as.factor(calli_f$event)
+
+calli_f <- calli_f %>% mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+head(calli_f)
+
+calli_plot<- ggplot(calli_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
+  geom_boxplot()
+  
+calli_plot
+```
+box plot for chilensis--
+```{r}
+chil_f <- filter(data_to_model, species == "chillensis") %>%
+  na.omit()
+
+chil_f$event = as.factor(chil_f$event)
+
+chil_f <- chil_f %>% mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+head(chil_f)
+
+chil_plot<- ggplot(chil_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
+  geom_boxplot()
+  
+chil_plot
+```
+
+trying to make box+whisker?
+```{r}
+library(plotrix)
+library(tidyverse)
+
+#Chamberlanium
+ch_simple <- filter(ch_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
+
+ch_for_plot <- ch_simple %>%
+group_by(treatment, event) %>%
+mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
+  
+
+chamberlanium_plot <- ggplot(data = ch_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
+geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  scale_color_manual(values=c("darkolivegreen3", "royalblue","goldenrod1", "orangered2")) +
+  scale_shape_manual(values=c(1,16,17,15)) +
+  ggtitle("Chamberlanium") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  labs(fill = "Treatment") +
+geom_linerange(aes(ymin = mean - SE, ymax = mean + SE)) +
+geom_line() +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"))
+
+chamberlanium_plot
+
+```
+
+```{r}
+#Calliarthron
+calli_simple <- filter(calli_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
+
+calli_for_plot <- calli_simple %>%
+group_by(treatment, event) %>%
+mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
+  
+
+calliarthron_plot <- ggplot(data = calli_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
+geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  scale_color_manual(values=c("darkolivegreen3", "royalblue","goldenrod1", "orangered2")) +
+  scale_shape_manual(values=c(1,16,17,15)) +
+  ggtitle("Calliarthron") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  labs(fill = "Treatment") +
+geom_linerange(aes(ymin = mean - SE, ymax = mean + SE)) +
+geom_line() +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7")) 
+
+calliarthron_plot
+```
+```{r}
+#Chilensis
+chil_simple <- filter(chil_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
+
+chil_for_plot <- chil_simple %>%
+group_by(treatment, event) %>%
+mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
+  
+
+chilensis_plot <- ggplot(data = chil_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
+geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  scale_color_manual(values=c("darkolivegreen3", "royalblue","goldenrod1", "orangered2")) +
+  scale_shape_manual(values=c(1,16,17,15)) +
+  ggtitle("Chilensis") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  labs(fill = "Treatment") +
+geom_linerange(aes(ymin = mean - SE, ymax = mean + SE)) +
+geom_line() +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"))
+
+chilensis_plot
+```
+```{r}
+library(patchwork)
+  
+  chamberlanium_plot /calliarthron_plot /chilensis_plot
+```
+Making boxplots for each treatment, comparing species:
+```{r}
+#high
+high_data <- data_to_model %>%
+  filter(treatment == "high") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli ", "chillensis"))
+
+high_treatment <- ggplot(high_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  ylim(0,0.55) +
+  ggtitle("High") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 7"))
+
+high_treatment
+
+#mid
+mid_data <- data_to_model %>%
+  filter(treatment == "mid") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli ", "chillensis"))
+
+mid_treatment <- ggplot(mid_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  ylim(0,0.55) +
+  ggtitle("Mid") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 7"))
+
+mid_treatment
+
+#low
+low_data <- data_to_model %>%
+  filter(treatment == "low") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli ", "chillensis"))
+
+low_treatment <- ggplot(low_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  ylim(0,0.55) +
+  ggtitle("Low") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 7"))
+
+low_treatment
+
+#control
+control_data <- data_to_model %>%
+  filter(treatment == "control") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli ", "chillensis"))
+
+control_treatment <- ggplot(control_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  ylim(0,0.55) +
+  ggtitle("Control") +
+  xlab("Observation day") +
+  ylab("YII ((Fm-F)/Fm)") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 1", "Day 7"))
+
+control_treatment
+
+
+
+stacked_plot <- (control_treatment/mid_treatment|low_treatment/high_treatment) +
+  ggtitle("Response & Recovery to Stress")
+  
+
+stacked_plot
+
+```
+
+Code for color species comparison plot_
+```{r}
+color_high <- colour_data %>%
+  filter(treatment == "high")
+
+color_high_plot<- ggplot(high_data, aes(x= species, y= deltaint_mean ,fill = species)) +
+  geom_boxplot()
+  
+color_high_plot
+```
+
+
+
+
+
+
+
+
+BELOW THIS IS JUST WORKING OUT STUFF
+
+filtering colour data:
+```{r}
+colour_data <- data %>%
+  unite(id, species, species_card, sep = '_', remove = F) %>%
+  dplyr::select("date","yellow_tub","species_card","species","number","treatment","name","event","int_mean","id") %>%
+  mutate(id = as.factor(id)) %>% 
+  filter(event == "pre_stress" | event == "post_stress_7")
+
+colour_data <- colour_data %>% mutate(event = fct_relevel(event, "pre_stress", "post_stress_7")) %>%
+  na.omit()
+```
+#####WANT to make this change in intensity over time
+
+
+
+plot it:high_
+```{r}
+high_data <- colour_data %>%
+  filter(treatment == "high")
+
+high_plot<- ggplot(high_data, aes(x= event, y= int_mean ,fill = species)) +
+  geom_boxplot()
+  
+high_plot
+```
+
+control_
+```{r}
+control_data <- colour_data %>%
+  filter(treatment == "control")
+
+control_plot<- ggplot(control_data, aes(x= event, y= int_mean ,fill = species)) +
+  geom_boxplot()
+  
+control_plot
+```
+
+
+
