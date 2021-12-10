@@ -103,7 +103,7 @@ c_data <- read.csv("test_colour.csv") %>%
    mutate(id = as.factor(id)) %>%
   dplyr::select("id", "int_mean", "treatment", "species", "event")%>%
 mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
-   mutate(species = fct_relevel(species, "cham", "calli ","chillensis")) %>%
+   mutate(species = fct_relevel(species, "cham", "calli","chillensis")) %>%
   na.omit(id, int_mean, species, treatment,event)
   
 
@@ -112,7 +112,7 @@ ct_data <- read.csv("test_colour.csv") %>%
   dplyr::select("id", "change_g7", "change_r7", "species", "treatment") %>%
   na.omit(id, change_g7, change_r7, species, treatment) %>%
   mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
-   mutate(species = fct_relevel(species, "cham", "calli ","chillensis"))
+   mutate(species = fct_relevel(species, "cham", "calli","chillensis"))
   
   
   
@@ -126,7 +126,7 @@ cham_ctdata <- ct_data %>%
 
 ca_ctdata <- ct_data %>%
   mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
-  dplyr::filter(species == "calli ")
+  dplyr::filter(species == "calli")
 
 chil_ctdata <- ct_data %>%
   mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
@@ -327,7 +327,7 @@ Sammie testing cleaning of plots
 
 species_names <- list(
   'cham'="A) C. tumidum",
-  'calli '="B) C. tuberculosum",
+  'calli'="B) C. tuberculosum",
   'chillensis'="C) C. chilensis"
 )
 
@@ -448,7 +448,7 @@ int_chil <- c_data %>%
   dplyr::filter(species == "chillensis")
 
 int_ca <- c_data %>%
-  dplyr::filter(species == "calli ")
+  dplyr::filter(species == "calli")
 
 int_cham <- c_data %>%
   dplyr::filter(species == "cham")
