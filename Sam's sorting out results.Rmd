@@ -98,9 +98,14 @@ Sammie's test of colour dataframe and cleaning
 write.csv(data_to_model,"id_data.csv")
 
 
-c_data <- read.csv("id_edit.csv") %>%
-  filter(event == "pre_stress" | event == "post_stress_7") %>%
-   mutate(id = as.factor(id))
+c_data <- read.csv("test_colour.csv") %>%
+  dplyr::filter(event == "pre_stress" | event == "post_stress_7") %>%
+   mutate(id = as.factor(id)) %>%
+  dplyr::select("id", "int_mean", "treatment", "species", "event")%>%
+mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
+   mutate(species = fct_relevel(species, "cham", "calli ","chillensis")) %>%
+  na.omit(id, int_mean, species, treatment,event)
+  
 
 ct_data <- read.csv("test_colour.csv") %>%
   mutate(id = as.factor(id)) %>%
@@ -188,6 +193,8 @@ Comparing the means for significance
 library(FSA) 
 library(fGarch)
 library(LambertW)
+
+kruskal.test(change_g7 ~ treatment, data = ct_data)
 
 kruskal.test(change_g7 ~ treatment, data = cham_ctdata)
 dunnTest(change_g7 ~ treatment, data = cham_ctdata)
@@ -277,7 +284,7 @@ scrap the red scale and keep the grey scale since they both show similar results
 cham_ctgplot <- ggplot(cham_ctdata, aes(x= treatment, y = change_g7, fill = treatment)) +
   geom_boxplot() + 
   guides(fill = FALSE) +
-  ylab("Change in intensity") +
+  ylab("Change in mean intensity") +
   xlab("H202 Concentration") +
   scale_x_discrete(labels = c('Control','Low','Mid','High')) + 
    ylim(-15,30) +
@@ -319,7 +326,7 @@ Sammie testing cleaning of plots
 
 
 species_names <- list(
-  'cham'="A) C. tumiduum",
+  'cham'="A) C. tumidum",
   'calli '="B) C. tuberculosum",
   'chillensis'="C) C. chilensis"
 )
@@ -331,14 +338,14 @@ species_labeller <- function(variable,value){
 
 test_ctgplot <- ggplot(ct_data, aes(x= treatment, y = change_g7, fill = treatment)) +
   geom_boxplot() + 
-  ylab("Change in intensity") +
+  ylab("Change in mean intensity") +
   xlab("H2O2 Concentration") + 
   labs(fill = "H2O2 Concentration") +
   facet_grid(. ~ species, labeller=species_labeller) +
   scale_x_discrete(labels = c('Control','Low','Mid','High')) +
   scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
-theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 14))
-
+theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 20, face = "italic"),legend.key.size = unit(2, 'cm'), axis.text.x = element_text(size = 15, angle=90, hjust=0.5), axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25), legend.text = element_text(size = 14), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20))
+                                                                                                                                                                                                                                                                                                                                                                                                                5))
 
 test_ctgplot
 
@@ -404,10 +411,10 @@ colour_control_plot <- ggplot(control_ctdata, aes(x= species, y= change_g7 ,fill
 
 ```{r}
 treatment_names <- list(
-  'control'="Control",
-  'low'="Low",
-  'mid'="Mid",
-  'high' ="High"
+  'control'="A) Control",
+  'low'="B) Low",
+  'mid'="C) Mid",
+  'high' ="D) High"
 )
 
 treatment_labeller <- function(variable,value){
@@ -416,17 +423,17 @@ treatment_labeller <- function(variable,value){
 
 
 tester_colour_plot <- ggplot(ct_data, aes(x= species, y= change_g7, fill= species)) +
-    ylab("Change in intensity") +
+    ylab("Change in mean intensity") +
   xlab("Species") + 
   labs(fill = "Species") + 
   facet_grid(. ~ treatment, labeller = treatment_labeller) +
   scale_x_discrete(labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
   geom_boxplot() +
-  ylab("Change in intensity") +
+  ylab("Change in mean intensity") +
   xlab("Species") + 
   labs(fill = "Species") + 
   scale_fill_manual(values = c('dark magenta', '#E7298A', 'darkorange1'), labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
-theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 14), legend.key.size = unit(1.25, 'cm'))
+theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 20), legend.key.size = unit(2, 'cm'), axis.text.x = element_text(size = 20, angle=90, hjust=0.5, face = "italic"), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.text = element_text(size = 14, face = "italic"), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), )
 
 
 tester_colour_plot
@@ -434,3 +441,53 @@ tester_colour_plot
 ggsave(tester_colour_plot, filename = "colour_figure2.png", height = 10, width = 15)
 
 ```
+
+Intensity with the means stuff 
+```{r}
+int_chil <- c_data %>%
+  dplyr::filter(species == "chillensis")
+
+int_ca <- c_data %>%
+  dplyr::filter(species == "calli ")
+
+int_cham <- c_data %>%
+  dplyr::filter(species == "cham")
+
+int_chil_plot <- ggplot(int_chil, aes(x=event, y=int_mean, fill = treatment)) +
+  geom_boxplot() +
+  ggtitle("") +
+  xlab("event") +
+  ylab("int_mean") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 7"))
+
+int_ca_plot <- ggplot(int_ca, aes(x=event, y=int_mean, fill = treatment)) +
+  geom_boxplot() +
+  ggtitle("") +
+  xlab("event") +
+  ylab("int_mean") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 7"))
+
+int_cham_plot <- ggplot(int_cham, aes(x=event, y=int_mean, fill = treatment)) +
+  geom_boxplot() +
+  ggtitle("") +
+  xlab("event") +
+  ylab("int_mean") +
+  theme_classic() +
+  scale_x_discrete(labels=c("Pre-stress", "Day 7"))
+
+int_chil_plot
+int_ca_plot
+int_cham_plot
+
+
+kruskal.test(int_mean ~ treatment, data = c_data)
+dunnTest(int_mean ~ treatment, data = int_chil)
+```
+
+
+
+
+
+
