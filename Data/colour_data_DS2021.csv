@@ -1,0 +1,193 @@
+yellow_tub,event,id,int_mean,pre_stress_g,post_stress_7g,change_g7,species,treatment
+1,pre_stress,cham_10,45.815,45.815,38.163,-7.652,cham,low
+1,pre_stress,calli _10,57.504,57.504,60.393,2.889,calli,low
+1,pre_stress,chillensis_10,59.519,59.519,65.599,6.08,chillensis,low
+1,pre_stress,cham_32,41.759,41.759,37.556,-4.203,cham,control
+1,pre_stress,calli _32,78.48,78.48,74.975,-3.505,calli,control
+1,pre_stress,chillensis_32,60.326,60.326,58.863,-1.463,chillensis,control
+1,pre_stress,cham_15,50.217,50.217,39.667,-10.55,cham,control
+1,pre_stress,calli _15,60.027,60.027,58.843,-1.184,calli,control
+1,pre_stress,chillensis_15,52.455,52.455,48.943,-3.512,chillensis,control
+1,pre_stress,cham_9,45.827,45.827,43.693,-2.134,cham,low
+1,pre_stress,calli _9,40.775,40.775,49.408,8.633,calli,low
+1,pre_stress,chillensis_9,42.827,42.827,47.27,4.443,chillensis,low
+1,pre_stress,cham_14,52.708,52.708,43.955,-8.753,cham,high
+1,pre_stress,calli _14,48.546,48.546,60.666,12.12,calli,high
+1,pre_stress,chillensis_14,44.028,44.028,56.969,12.941,chillensis,high
+1,pre_stress,cham_23,44.574,44.574,33.871,-10.703,cham,control
+1,pre_stress,calli _23,54.382,54.382,50.368,-4.014,calli,control
+1,pre_stress,chillensis_23,47.604,47.604,45.691,-1.913,chillensis,control
+1,pre_stress,cham_6,44.892,44.892,39.919,-4.973,cham,high
+1,pre_stress,calli _6,39.092,39.092,50.831,11.739,calli,high
+1,pre_stress,chillensis_6,47.531,47.531,78.023,30.492,chillensis,high
+1,pre_stress,cham_7,42.612,42.612,37.551,-5.061,cham,control
+1,pre_stress,calli _7,43.444,43.444,44.979,1.535,calli,control
+1,pre_stress,chillensis_7,42.856,42.856,49.479,6.623,chillensis,control
+2,pre_stress,cham_25,46.045,46.045,31.838,-14.207,cham,low
+2,pre_stress,calli _25,44.032,44.032,61.35,17.318,calli,low
+2,pre_stress,chillensis_25,55.79,55.79,65.843,10.053,chillensis,low
+2,pre_stress,cham_20,45.785,45.785,36.728,-9.057,cham,mid
+2,pre_stress,calli _20,49.122,49.122,56.931,7.809,calli,mid
+2,pre_stress,chillensis_20,41.813,41.813,50.196,8.383,chillensis,mid
+2,pre_stress,cham_30,43.673,43.673,35.363,-8.31,cham,high
+2,pre_stress,calli _30,49.443,49.443,48.649,-0.794,calli,high
+2,pre_stress,chillensis_30,51.377,51.377,61.897,10.52,chillensis,high
+2,pre_stress,cham_2,46.499,46.499,42.26,-4.239,cham,low
+2,pre_stress,calli _2,66.783,66.783,71.083,4.3,calli,low
+2,pre_stress,chillensis_2,44.002,44.002,52.22,8.218,chillensis,low
+2,pre_stress,cham_28,60.35,60.35,50.704,-9.646,cham,mid
+2,pre_stress,calli _28,55.288,55.288,63.77,8.482,calli,mid
+2,pre_stress,chillensis_28,48.335,48.335,43.164,-5.171,chillensis,mid
+2,pre_stress,cham_22,51.622,51.622,46.831,-4.791,cham,high
+2,pre_stress,calli _22,48.322,48.322,56.058,7.736,calli,high
+2,pre_stress,chillensis_22,46.569,46.569,54.015,7.446,chillensis,high
+2,pre_stress,cham_1,49.538,49.538,45.694,-3.844,cham,low
+2,pre_stress,calli _1,44.597,44.597,45.145,0.548,calli,low
+2,pre_stress,chillensis_1,54.889,54.889,51.401,-3.488,chillensis,low
+2,pre_stress,cham_16,60.751,60.751,48.885,-11.866,cham,control
+2,pre_stress,calli _16,41.159,41.159,43.566,2.407,calli,control
+2,pre_stress,chillensis_16,66.677,66.677,59.898,-6.779,chillensis,control
+3,pre_stress,cham_17,48.928,48.928,42.913,-6.015,cham,low
+3,pre_stress,calli _17,69.099,69.099,72.154,3.055,calli,low
+3,pre_stress,chillensis_17,53.878,53.878,50.663,-3.215,chillensis,low
+3,pre_stress,cham_11,50.328,50.328,45.732,-4.596,cham,mid
+3,pre_stress,calli _11,61.412,61.412,74.182,12.77,calli,mid
+3,pre_stress,chillensis_11,60.712,60.712,86.267,25.555,chillensis,mid
+3,pre_stress,cham_26,45.782,45.782,34.831,-10.951,cham,low
+3,pre_stress,calli _26,59.99,59.99,55.763,-4.227,calli,low
+3,pre_stress,chillensis_26,64.913,64.913,60.235,-4.678,chillensis,low
+3,pre_stress,cham_12,42.453,42.453,42.377,-0.076,cham,mid
+3,pre_stress,calli _12,45.806,45.806,52.577,6.771,calli,mid
+3,pre_stress,chillensis_12,51.206,51.206,63.8,12.594,chillensis,mid
+3,pre_stress,cham_4,64.284,64.284,52.248,-12.036,cham,mid
+3,pre_stress,calli _4,60.936,60.936,58.283,-2.653,calli,mid
+3,pre_stress,chillensis_4,53.865,53.865,58.973,5.108,chillensis,mid
+3,pre_stress,cham_5,52.813,52.813,44.226,-8.587,cham,high
+3,pre_stress,calli _5,55.296,55.296,51.078,-4.218,calli,high
+3,pre_stress,chillensis_5,51.685,51.685,55.601,3.916,chillensis,high
+3,pre_stress,cham_13,39.31,39.31,36.099,-3.211,cham,high
+3,pre_stress,calli _13,45.27,45.27,53.302,8.032,calli,high
+3,pre_stress,chillensis_13,59.737,59.737,66.597,6.86,chillensis,high
+3,pre_stress,cham_24,52.595,52.595,50.804,-1.791,cham,control
+3,pre_stress,calli _24,62.977,62.977,69.712,6.735,calli,control
+3,pre_stress,chillensis_24,42.597,42.597,53.143,10.546,chillensis,control
+4,pre_stress,cham_21,55.534,55.534,54.031,-1.503,cham,high
+4,pre_stress,calli _21,47.689,47.689,64.625,16.936,calli,high
+4,pre_stress,chillensis_21,46.586,46.586,65.654,19.068,chillensis,high
+4,pre_stress,cham_27,46.326,46.326,46.503,0.177,cham,mid
+4,pre_stress,calli _27,54.592,54.592,58.489,3.897,calli,mid
+4,pre_stress,chillensis_27,50.057,50.057,62.83,12.773,chillensis,mid
+4,pre_stress,cham_31,52.861,52.861,44.762,-8.099,cham,control
+4,pre_stress,calli _31,61.185,61.185,55.682,-5.503,calli,control
+4,pre_stress,chillensis_31,58.387,58.387,58.595,0.208,chillensis,control
+4,pre_stress,cham_3,38.462,38.462,33.167,-5.295,cham,mid
+4,pre_stress,calli _3,61.237,61.237,54.688,-6.549,calli,mid
+4,pre_stress,chillensis_3,55.04,55.04,60.898,5.858,chillensis,mid
+4,pre_stress,cham_18,44.809,44.809,30.334,-14.475,cham,low
+4,pre_stress,calli _18,56.848,56.848,48.168,-8.68,calli,low
+4,pre_stress,chillensis_18,53.914,53.914,51.455,-2.459,chillensis,low
+4,pre_stress,cham_8,47.354,47.354,42.809,-4.545,cham,control
+4,pre_stress,calli _8,41.806,41.806,45.442,3.636,calli,control
+4,pre_stress,chillensis_8,45.994,45.994,48.264,2.27,chillensis,control
+4,pre_stress,cham_19,42.864,42.864,37.232,-5.632,cham,mid
+4,pre_stress,calli _19,45.137,45.137,54.048,8.911,calli,mid
+4,pre_stress,chillensis_19,57.054,57.054,66.947,9.893,chillensis,mid
+4,pre_stress,cham_29,37.326,37.326,31.357,-5.969,cham,high
+4,pre_stress,calli _29,64.223,64.223,70.421,6.198,calli,high
+4,pre_stress,chillensis_29,52.48,52.48,58.673,6.193,chillensis,high
+1,post_stress_7,cham_10,38.163,45.815,38.163,-7.652,cham,low
+1,post_stress_7,calli _10,60.393,57.504,60.393,2.889,calli,low
+1,post_stress_7,chillensis_10,65.599,59.519,65.599,6.08,chillensis,low
+1,post_stress_7,cham_32,37.556,41.759,37.556,-4.203,cham,control
+1,post_stress_7,calli _32,74.975,78.48,74.975,-3.505,calli,control
+1,post_stress_7,chillensis_32,58.863,60.326,58.863,-1.463,chillensis,control
+1,post_stress_7,cham_15,39.667,50.217,39.667,-10.55,cham,control
+1,post_stress_7,calli _15,58.843,60.027,58.843,-1.184,calli,control
+1,post_stress_7,chillensis_15,48.943,52.455,48.943,-3.512,chillensis,control
+1,post_stress_7,cham_9,43.693,45.827,43.693,-2.134,cham,low
+1,post_stress_7,calli _9,49.408,40.775,49.408,8.633,calli,low
+1,post_stress_7,chillensis_9,47.27,42.827,47.27,4.443,chillensis,low
+1,post_stress_7,cham_14,43.955,52.708,43.955,-8.753,cham,high
+1,post_stress_7,calli _14,60.666,48.546,60.666,12.12,calli,high
+1,post_stress_7,chillensis_14,56.969,44.028,56.969,12.941,chillensis,high
+1,post_stress_7,cham_23,33.871,44.574,33.871,-10.703,cham,control
+1,post_stress_7,calli _23,50.368,54.382,50.368,-4.014,calli,control
+1,post_stress_7,chillensis_23,45.691,47.604,45.691,-1.913,chillensis,control
+1,post_stress_7,cham_6,39.919,44.892,39.919,-4.973,cham,high
+1,post_stress_7,calli _6,50.831,39.092,50.831,11.739,calli,high
+1,post_stress_7,chillensis_6,78.023,47.531,78.023,30.492,chillensis,high
+1,post_stress_7,cham_7,37.551,42.612,37.551,-5.061,cham,control
+1,post_stress_7,calli _7,44.979,43.444,44.979,1.535,calli,control
+1,post_stress_7,chillensis_7,49.479,42.856,49.479,6.623,chillensis,control
+2,post_stress_7,cham_25,31.838,46.045,31.838,-14.207,cham,low
+2,post_stress_7,calli _25,61.35,44.032,61.35,17.318,calli,low
+2,post_stress_7,chillensis_25,65.843,55.79,65.843,10.053,chillensis,low
+2,post_stress_7,cham_20,36.728,45.785,36.728,-9.057,cham,mid
+2,post_stress_7,calli _20,56.931,49.122,56.931,7.809,calli,mid
+2,post_stress_7,chillensis_20,50.196,41.813,50.196,8.383,chillensis,mid
+2,post_stress_7,cham_30,35.363,43.673,35.363,-8.31,cham,high
+2,post_stress_7,calli _30,48.649,49.443,48.649,-0.794,calli,high
+2,post_stress_7,chillensis_30,61.897,51.377,61.897,10.52,chillensis,high
+2,post_stress_7,cham_2,42.26,46.499,42.26,-4.239,cham,low
+2,post_stress_7,calli _2,71.083,66.783,71.083,4.3,calli,low
+2,post_stress_7,chillensis_2,52.22,44.002,52.22,8.218,chillensis,low
+2,post_stress_7,cham_28,50.704,60.35,50.704,-9.646,cham,mid
+2,post_stress_7,calli _28,63.77,55.288,63.77,8.482,calli,mid
+2,post_stress_7,chillensis_28,43.164,48.335,43.164,-5.171,chillensis,mid
+2,post_stress_7,cham_22,46.831,51.622,46.831,-4.791,cham,high
+2,post_stress_7,calli _22,56.058,48.322,56.058,7.736,calli,high
+2,post_stress_7,chillensis_22,54.015,46.569,54.015,7.446,chillensis,high
+2,post_stress_7,cham_1,45.694,49.538,45.694,-3.844,cham,low
+2,post_stress_7,calli _1,45.145,44.597,45.145,0.548,calli,low
+2,post_stress_7,chillensis_1,51.401,54.889,51.401,-3.488,chillensis,low
+2,post_stress_7,cham_16,48.885,60.751,48.885,-11.866,cham,control
+2,post_stress_7,calli _16,43.566,41.159,43.566,2.407,calli,control
+2,post_stress_7,chillensis_16,59.898,66.677,59.898,-6.779,chillensis,control
+3,post_stress_7,cham_17,42.913,48.928,42.913,-6.015,cham,low
+3,post_stress_7,calli _17,72.154,69.099,72.154,3.055,calli,low
+3,post_stress_7,chillensis_17,50.663,53.878,50.663,-3.215,chillensis,low
+3,post_stress_7,cham_11,45.732,50.328,45.732,-4.596,cham,mid
+3,post_stress_7,calli _11,74.182,61.412,74.182,12.77,calli,mid
+3,post_stress_7,chillensis_11,86.267,60.712,86.267,25.555,chillensis,mid
+3,post_stress_7,cham_26,34.831,45.782,34.831,-10.951,cham,low
+3,post_stress_7,calli _26,55.763,59.99,55.763,-4.227,calli,low
+3,post_stress_7,chillensis_26,60.235,64.913,60.235,-4.678,chillensis,low
+3,post_stress_7,cham_12,42.377,42.453,42.377,-0.076,cham,mid
+3,post_stress_7,calli _12,52.577,45.806,52.577,6.771,calli,mid
+3,post_stress_7,chillensis_12,63.8,51.206,63.8,12.594,chillensis,mid
+3,post_stress_7,cham_4,52.248,64.284,52.248,-12.036,cham,mid
+3,post_stress_7,calli _4,58.283,60.936,58.283,-2.653,calli,mid
+3,post_stress_7,chillensis_4,58.973,53.865,58.973,5.108,chillensis,mid
+3,post_stress_7,cham_5,44.226,52.813,44.226,-8.587,cham,high
+3,post_stress_7,calli _5,51.078,55.296,51.078,-4.218,calli,high
+3,post_stress_7,chillensis_5,55.601,51.685,55.601,3.916,chillensis,high
+3,post_stress_7,cham_13,36.099,39.31,36.099,-3.211,cham,high
+3,post_stress_7,calli _13,53.302,45.27,53.302,8.032,calli,high
+3,post_stress_7,chillensis_13,66.597,59.737,66.597,6.86,chillensis,high
+3,post_stress_7,cham_24,50.804,52.595,50.804,-1.791,cham,control
+3,post_stress_7,calli _24,69.712,62.977,69.712,6.735,calli,control
+3,post_stress_7,chillensis_24,53.143,42.597,53.143,10.546,chillensis,control
+4,post_stress_7,cham_21,54.031,55.534,54.031,-1.503,cham,high
+4,post_stress_7,calli _21,64.625,47.689,64.625,16.936,calli,high
+4,post_stress_7,chillensis_21,65.654,46.586,65.654,19.068,chillensis,high
+4,post_stress_7,cham_27,46.503,46.326,46.503,0.177,cham,mid
+4,post_stress_7,calli _27,58.489,54.592,58.489,3.897,calli,mid
+4,post_stress_7,chillensis_27,62.83,50.057,62.83,12.773,chillensis,mid
+4,post_stress_7,cham_31,44.762,52.861,44.762,-8.099,cham,control
+4,post_stress_7,calli _31,55.682,61.185,55.682,-5.503,calli,control
+4,post_stress_7,chillensis_31,58.595,58.387,58.595,0.208,chillensis,control
+4,post_stress_7,cham_3,33.167,38.462,33.167,-5.295,cham,mid
+4,post_stress_7,calli _3,54.688,61.237,54.688,-6.549,calli,mid
+4,post_stress_7,chillensis_3,60.898,55.04,60.898,5.858,chillensis,mid
+4,post_stress_7,cham_18,30.334,44.809,30.334,-14.475,cham,low
+4,post_stress_7,calli _18,48.168,56.848,48.168,-8.68,calli,low
+4,post_stress_7,chillensis_18,51.455,53.914,51.455,-2.459,chillensis,low
+4,post_stress_7,cham_8,42.809,47.354,42.809,-4.545,cham,control
+4,post_stress_7,calli _8,45.442,41.806,45.442,3.636,calli,control
+4,post_stress_7,chillensis_8,48.264,45.994,48.264,2.27,chillensis,control
+4,post_stress_7,cham_19,37.232,42.864,37.232,-5.632,cham,mid
+4,post_stress_7,calli _19,54.048,45.137,54.048,8.911,calli,mid
+4,post_stress_7,chillensis_19,66.947,57.054,66.947,9.893,chillensis,mid
+4,post_stress_7,cham_29,31.357,37.326,31.357,-5.969,cham,high
+4,post_stress_7,calli _29,70.421,64.223,70.421,6.198,calli,high
+4,post_stress_7,chillensis_29,58.673,52.48,58.673,6.193,chillensis,high
