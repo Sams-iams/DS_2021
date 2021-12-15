@@ -1,0 +1,501 @@
+---
+title: "Results Stat Analysis"
+author: "Lucy"
+date: "25/11/2021"
+output: pdf_document
+---
+
+Load libraries:
+```{r, include=FALSE}
+library(ggplot2)
+library(popbio)
+library(dplyr)
+library(patchwork)
+library(DHARMa)
+library(mgcv)
+library(fitdistrplus)
+library(goft)
+library(gamlss)
+library(viridis)
+library(tidyverse)
+library(rstatix)
+```
+
+Load in data and rename PAM column: ***we need new dataset name here****
+```{r}
+data <- read.csv("PAM_data_DS2021.csv")
+data <- data %>%
+rename("Y_II_PAM" = "Y_II..PAM.") %>%
+  mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
+  mutate(species = fct_relevel(species, "cham", "calli", "chillensis"))
+```
+
+Setting up data with PAM-data columns only:
+```{r}
+data_to_model <- data %>%
+  unite(id, species, species_card, sep = '_', remove = F) %>%
+  dplyr::select("date","yellow_tub","species_card","species","number","treatment","name","event","Y_II_PAM","id") %>%
+  mutate(id = as.factor(id))
+```
+
+Re-ordering "event" column for graphing later:
+```{r}
+data_to_model <- data_to_model %>% mutate(event = fct_relevel(event, "pre_stress", "post_stress", "post_stress_1", "post_stress_2", "post_stress_3", "post_stress_4", "post_stress_5", "post_stress_6","post_stress_7"))
+```
+
+Testing YII data for normality:
+```{r}
+shapiro.test(data_to_model$Y_II_PAM)
+
+#not normal P=3.09e-08
+```
+
+Making Cullen & Frey graph:
+```{r}
+descdist(data_to_model$Y_II_PAM)
+```
+Looks like it might be a gamma/lognormal/weibull
+
+fitDist to get recommended distribution:
+```{r}
+fitDist(Y_II_PAM, data = data_to_model, type = "realAll", try.gamlss = T)
+```
+
+Look at histograms to find distribution fit:
+```{r}
+mGA <- histDist(data_to_model$Y_II_PAM, "GA", density = T, main = "Gamma")
+mlN <- histDist(data_to_model$Y_II_PAM, "LOGNO", density = T, main = "lNorm")
+mWE <- histDist(data_to_model$Y_II_PAM, "WEI", density = T, main = "Weibull")
+mNO <- histDist(data_to_model$Y_II_PAM, "NO", density = T, main = "Normal")
+mSEP2 <- histDist(data_to_model$Y_II_PAM, "SEP2", density = T, main = "SEP2")
+```
+```{r}
+GAIC(mGA, mlN, mWE, mNO, mSEP2)
+#WEI is really close to SEP2 but has fewer degrees of freedom (we chose to move forward with WEI)
+```
+
+
+Full model for all event days using WEI:
+```{r}
+mod_WEI <- gamlss(Y_II_PAM ~ species + treatment*event + random(id), family = WEI(), data = data_to_model, method = RS(), control = gamlss.control())
+
+summary(mod_WEI)
+```
+
+Modelling simple version -just 3 event days: pre-stress, post_stress1, and post_stress7:
+```{r}
+simpler_data <- data_to_model %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7")
+
+simpler_mod_WEI <- gamlss(Y_II_PAM ~ species + treatment*event + random(id), family = WEI(), data = simpler_data, method = RS(), control = gamlss.control())
+
+summary(simpler_mod_WEI)
+```
+
+
+making boxplot to visualize data for chamberlanium:
+```{r}
+ch_f <- filter(data_to_model, species == "cham") %>%
+  na.omit()
+
+ch_f$event = as.factor(ch_f$event)
+
+ch_f <- ch_f %>% mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+head(ch_f)
+
+cham_plot<- ggplot(ch_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
+  geom_boxplot()
+  
+cham_plot
+```
+boxplot to visualize calliarthron data:
+```{r}
+calli_f <- filter(data_to_model, species == "calli") %>%
+  na.omit()
+
+calli_f$event = as.factor(calli_f$event)
+
+calli_f <- calli_f %>% mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+head(calli_f)
+
+calli_plot<- ggplot(calli_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
+  geom_boxplot()
+  
+calli_plot
+```
+boxplot for chilensis data:
+```{r}
+chil_f <- filter(data_to_model, species == "chillensis") %>%
+  na.omit()
+
+chil_f$event = as.factor(chil_f$event)
+
+chil_f <- chil_f %>% mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high"))
+
+head(chil_f)
+
+chil_plot<- ggplot(chil_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
+  geom_boxplot()
+  
+chil_plot
+```
+
+Making a box+whisker plot for each of the three species separately, following YII over observation week:
+```{r}
+library(plotrix)
+library(tidyverse)
+
+#Chamberlanium
+ch_simple <- filter(ch_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
+
+ch_for_plot <- ch_simple %>%
+group_by(treatment, event) %>%
+mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
+  
+
+chamberlanium_plot <- ggplot(data = ch_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
+  geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  ylim(0,0.4) +
+  scale_color_manual(values=c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF')) +
+  scale_shape_manual(values=c(1,16,17,15)) +
+  scale_fill_discrete(name = "H202 Concentration", labels = c("Control", "Low", "Mid", "High")) +
+  ggtitle("A) C. tumidum") +
+  xlab("Monitoring Day") +
+  ylab("YII") +
+  geom_linerange(aes(ymin = mean - SE, ymax = mean + SE)) +
+  geom_line() +
+  theme_classic() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) 
+  
+
+chamberlanium_plot
+
+```
+
+```{r}
+#calliarthron
+calli_simple <- filter(calli_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
+
+calli_for_plot <- calli_simple %>%
+group_by(treatment, event) %>%
+mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
+  
+
+calliarthron_plot <- ggplot(data = calli_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
+  geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  ylim(0,0.4) +
+  scale_color_manual(values=c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF')) +
+  scale_shape_manual(values=c(1,16,17,15)) +
+  scale_fill_discrete(name = "H202 Concentration", labels = c("Control", "Low", "Mid", "High")) +
+  ggtitle("B) C. tuberculosum") +
+  xlab("Monitoring Day") +
+  ylab("YII") +
+  geom_linerange(aes(ymin = mean - SE, ymax = mean + SE)) +
+  geom_line() +
+  theme_classic() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7"))   
+
+calliarthron_plot
+```
+
+```{r}
+#Chilensis
+chil_simple <- filter(chil_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
+
+chil_for_plot <- chil_simple %>%
+group_by(treatment, event) %>%
+mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
+  
+
+chilensis_plot <- ggplot(data = chil_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
+  geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  ylim(0,0.4) +
+  scale_color_manual(values=c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF')) +
+  scale_shape_manual(values=c(1,16,17,15)) +
+  scale_fill_discrete(name = "H202 Concentration", labels = c("Control", "Low", "Mid", "High")) +
+  ggtitle("C) C. chilensis") +
+  xlab("Monitoring Day") +
+  ylab("YII") +
+  theme(legend.title = "H202 Concentration") +
+  geom_linerange(aes(ymin = mean - SE, ymax = mean + SE)) +
+  geom_line() +
+  theme_classic() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) 
+
+chilensis_plot
+```
+Patchworking the three above plots together:
+```{r}
+
+chamberlanium_plot + calliarthron_plot + chilensis_plot
+
+pam_plots_fig1 <- chamberlanium_plot + calliarthron_plot + chilensis_plot
+
+ggsave(pam_plots_fig1, filename = "pam_fig1.png", height = 10, width = 15)
+```
+Making boxplots for each treatment, comparing species:
+```{r}
+
+proper_names <- c(cham = "C. tumidum", "calli" = "C. tuberculosum", chillensis = "C. chilensis")
+
+#high
+high_data <- data_to_model %>%
+  filter(treatment == "high") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli", "chillensis"))
+
+high_treatment <- ggplot(high_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  ylim(0,0.55) +
+  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
+  ggtitle("D) High") +
+  xlab("Monitoring day") +
+  ylab("YII") +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names))
+  
+
+high_treatment
+
+#mid
+mid_data <- data_to_model %>%
+  filter(treatment == "mid") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli", "chillensis"))
+
+mid_treatment <- ggplot(mid_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
+  ylim(0,0.55) +
+  ggtitle("C) Mid") +
+  xlab("Monitoring day") +
+  ylab("YII") +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names))
+
+mid_treatment
+
+#low
+low_data <- data_to_model %>%
+  filter(treatment == "low") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli", "chillensis"))
+
+low_treatment <- ggplot(low_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
+  ylim(0,0.55) +
+  ggtitle("B) Low") +
+  xlab("Monitoring day") +
+  ylab("YII") +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names))
+
+low_treatment
+
+#control
+control_data <- data_to_model %>%
+  filter(treatment == "control") %>%
+  filter(event == "pre_stress" | event == "post_stress_1" | event == "post_stress_7") %>%
+  mutate(species = fct_relevel(species, "cham", "calli", "chillensis"))
+
+control_treatment <- ggplot(control_data, aes(x=event, y=Y_II_PAM, fill = species)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
+  ylim(0,0.55) +
+  ggtitle("A) Control") +
+  xlab("Monitoring day") +
+  ylab("YII") +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names)) 
+
+
+control_treatment
+
+```
+
+Testing significance in change of YII for each treatment, between days. separated below by treatment and species, with corresponding Friedman and Wilcoxon tests to test significance:
+```{r}
+#need a non-parametric comparison of multiple means, with paired data
+
+#Friedman Test- followed by Wilcoxon paired comparison of means
+
+library(tidyverse)
+library(rstatix)
+
+#**for control per species**
+
+#filter datasets for control treatment and each individual species, and run comparison of means stats tests
+
+#control chamberlanium: 
+fried_cham_cont <- as.data.frame(control_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "cham")
+
+fried_cham_cont_matrix <- as.matrix.data.frame(fried_cham_cont)
+
+friedman.test(Y_II_PAM ~ event | id, fried_cham_cont_matrix)
+
+#control calli
+fried_calli_cont <- as.data.frame(control_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "calli")
+
+fried_calli_cont_matrix <- as.matrix.data.frame(fried_calli_cont)
+
+friedman.test(Y_II_PAM ~ event | id, fried_calli_cont_matrix)
+
+#control chile
+fried_chile_cont <- as.data.frame(control_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "chillensis")
+
+fried_chile_cont_matrix <- as.matrix.data.frame(fried_chile_cont)
+
+friedman.test(Y_II_PAM ~ event | id, fried_chile_cont_matrix)
+
+```
+
+```{r}
+#**for low treatment per species**
+
+#filter datasets for low treatment and each individual species, and run comparison of means stats tests
+
+#low chamberlanium
+fried_cham_low <- as.data.frame(low_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "cham")
+
+fried_cham_low_matrix <- as.matrix.data.frame(fried_cham_low)
+
+friedman.test(Y_II_PAM ~ event | id, fried_cham_low_matrix)
+
+#low calli
+fried_calli_low <- as.data.frame(low_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "calli")
+
+fried_calli_low_matrix <- as.matrix.data.frame(fried_calli_low)
+
+friedman.test(Y_II_PAM ~ event | id, fried_calli_low_matrix)
+
+pairwise.wilcox.test(fried_calli_low$Y_II_PAM, g = fried_calli_low$event)
+
+#low chile
+fried_chile_low <- as.data.frame(low_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "chillensis")
+
+fried_chile_low_matrix <- as.matrix.data.frame(fried_chile_low)
+
+friedman.test(Y_II_PAM ~ event | id, fried_chile_low_matrix)
+
+pairwise.wilcox.test(fried_chile_low$Y_II_PAM, g = fried_chile_low$event)
+```
+
+```{r}
+#**for mid treatment per species**
+
+#filter datasets for mid treatment and each individual species, and run comparison of means stats tests
+
+#mid chamberlanium
+fried_cham_mid <- as.data.frame(mid_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "cham")
+
+fried_cham_mid_matrix <- as.matrix.data.frame(fried_cham_mid)
+
+friedman.test(Y_II_PAM ~ event | id, fried_cham_mid_matrix)
+
+pairwise.wilcox.test(fried_cham_mid$Y_II_PAM, g = fried_cham_mid$event)
+
+#mid calli
+fried_calli_mid <- as.data.frame(mid_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "calli")
+
+fried_calli_mid_matrix <- as.matrix.data.frame(fried_calli_mid)
+
+friedman.test(Y_II_PAM ~ event | id, fried_calli_mid_matrix)
+
+pairwise.wilcox.test(fried_calli_mid$Y_II_PAM, g = fried_calli_mid$event)
+
+#mid chile
+fried_chile_mid <- as.data.frame(mid_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "chillensis")
+
+fried_chile_mid_matrix <- as.matrix.data.frame(fried_chile_mid)
+
+friedman.test(Y_II_PAM ~ event | id, fried_chile_mid_matrix)
+
+pairwise.wilcox.test(fried_chile_mid$Y_II_PAM, g = fried_chile_mid$event)
+```
+
+```{r}
+#**for high treatment per species**
+
+#filter datasets for high treatment and each individual species, and run comparison of means stats tests
+
+#high chamberlanium
+fried_cham_high <- as.data.frame(high_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "cham")
+
+fried_cham_high_matrix <- as.matrix.data.frame(fried_cham_high)
+
+friedman.test(Y_II_PAM ~ event | id, fried_cham_high_matrix)
+
+pairwise.wilcox.test(fried_cham_high$Y_II_PAM, g = fried_cham_high$event)
+
+#high calli
+fried_calli_high <- as.data.frame(high_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "calli")
+
+fried_calli_high_matrix <- as.matrix.data.frame(fried_calli_high)
+
+friedman.test(Y_II_PAM ~ event | id, fried_calli_high_matrix)
+
+pairwise.wilcox.test(fried_calli_high$Y_II_PAM, g = fried_calli_high$event)
+
+#high chile
+fried_chile_high <- as.data.frame(high_data) %>%
+  select(c("event", "Y_II_PAM", "id", "species")) %>%
+  filter(species == "chillensis")
+
+fried_chile_high_matrix <- as.matrix.data.frame(fried_chile_high)
+
+friedman.test(Y_II_PAM ~ event | id, fried_chile_high_matrix)
+
+pairwise.wilcox.test(fried_chile_high$Y_II_PAM, g = fried_chile_high$event)
+```
+
+
+
+
+
+

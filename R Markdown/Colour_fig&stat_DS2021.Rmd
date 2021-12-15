@@ -1,0 +1,289 @@
+---
+title: "Results Stat Analysis"
+author: "Lucy and Sammie"
+date: "25/11/2021"
+output: pdf_document
+---
+
+Load libraries:
+```{r, include=FALSE}
+library(ggplot2)
+library(popbio)
+library(dplyr)
+library(patchwork)
+library(DHARMa)
+library(mgcv)
+library(fitdistrplus)
+library(goft)
+library(gamlss)
+library(viridis)
+library(tidyverse)
+library(patchwork)
+```
+
+Loading colour data and cleaning
+```{r}
+  
+ct_data <- read.csv("colour_data_DS2021.csv") %>%
+  mutate(id = as.factor(id)) %>%
+  dplyr::select("id", "change_g7", "species", "treatment") %>%
+  na.omit(id, change_g7, species, treatment, int_mean, event) %>%
+  mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
+   mutate(species = fct_relevel(species, "cham", "calli","chillensis"))
+  
+
+```
+
+filtering for species and cleaning more 
+```{r}
+cham_ctdata <- ct_data %>%
+  mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
+  dplyr::filter(species == "cham") 
+
+ca_ctdata <- ct_data %>%
+  mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
+  dplyr::filter(species == "calli")
+
+chil_ctdata <- ct_data %>%
+  mutate(treatment = fct_relevel(treatment, "control", "low", "mid", "high")) %>%
+  dplyr::filter(species == "chillensis")
+```
+
+
+Normality test for colour data
+```{r}
+shapiro.test(ct_data$change_g7)
+```
+The colour data is not normal 
+
+
+Collen & Frey Graph of colour data
+```{r}
+descdist(ct_data$change_g7)
+```
+From the Collen and Frey graph we will try gamma, weibull, lognormal, and a beta 
+
+Looking at other distribution fits
+```{r}
+fitDist(change_g7, data = ct_data, type = "realAll", try.gamlss = T)
+```
+Initially suggestd a reverse gumbel and now a skewed normal type 2 distribution is suggested so we will test both for the lowest AIC.
+
+
+Look at histograms to find distribution: 
+```{r}
+cmGA <- histDist(ct_data$change_g7, "GA", density = T, main = "Gamma")
+cmlN <- histDist(ct_data$change_g7, "LOGNO", density = T, main = "lNorm")
+cmWE <- histDist(ct_data$change_g7, "WEI", density = T, main = "Weibull")
+cmB <- histDist(ct_data$change_g7, "BE", density = T, main = "Beta")
+cRG <- histDist(ct_data$change_g7, "RG", density = T, main = "Reverse Gumbel")
+cNO <- histDist(ct_data$change_g7, "NO", density = T, main = "Normal")
+cSN2<- histDist(ct_data$change_g7, "SN2", density = T, main = "Skew Normal 2")
+```
+Found out that some of the models do not work due to negative values possibly and will continue GAIC using reverse gumbel vs. Skewed noraml 2, and normal
+AIC 
+```{r}
+GAIC(cRG,cNO,cSN2)
+```
+
+Lowest AIC is Skewed normal 2 but is within less than 2 points of Reverse gumbel AIC, and Reverse gumbel has a lower df, so we will begin modelling with Reverse Gumbel!
+
+```{r}
+cmRG <- histDist(ct_data$change_g7, "RG", density = T, main = "Reverse Gumbel")
+```
+
+Making a model!
+```{r}
+mod_RG <- gamlss(change_g7 ~ species + treatment, family = RG(), data = ct_data)
+
+summary(mod_RG)
+```
+
+Comparing the change in intensity means for significance (by treatment for species)
+```{r}
+
+library(FSA) 
+library(fGarch)
+library(LambertW)
+
+kruskal.test(change_g7 ~ treatment, data = ct_data)
+dunnTest(change_g7 ~ treatment, data =ct_data)
+
+kruskal.test(change_g7 ~ treatment, data = cham_ctdata)
+dunnTest(change_g7 ~ treatment, data = cham_ctdata)
+
+kruskal.test(change_g7 ~ treatment, data = ca_ctdata)
+dunnTest(change_g7 ~ treatment, data = ca_ctdata)
+
+kruskal.test(change_g7 ~ treatment, data = chil_ctdata)
+dunnTest(change_g7 ~ treatment, data = chil_ctdata)
+```
+
+Siginificance found! Found for C. Chilensis and C. tuberculosum
+For C. tub it is significant between control-high (p=0.011) and ALMOST for control-mid (p=0.05457)
+For C. chil it is significant between control-high(p=), high-low(p=0.0036), control-mid(p=0.0175), low-mid (p=0.3274)
+
+
+Making boxplots for change in mean intensity by treatment for each species
+```{r}
+cham_ctgplot <- ggplot(cham_ctdata, aes(x= treatment, y = change_g7, fill = treatment)) +
+  geom_boxplot() + 
+  guides(fill = FALSE) +
+  ylab("Change in mean intensity") +
+  xlab(bquote('Concentration of' ~H[2]~O[2])) +
+  scale_x_discrete(labels = c('Control','Low','Mid','High')) + 
+   ylim(-15,30) +
+  ggtitle("A) C. tumidum") +
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
+  theme_classic()
+
+ca_ctgplot <- ggplot(ca_ctdata, aes(x= treatment, y = change_g7, fill = treatment)) +
+  geom_boxplot() + 
+  guides(fill = FALSE) +
+  ylab("") +
+xlab(bquote('Concentration of' ~H[2]~O[2])) +
+  labs(fill = "H202 Concentration") +
+  scale_x_discrete(labels = c('Control','Low','Mid','High')) + 
+   ylim(-15,30) +
+  ggtitle("B) C. tuberculosum") +
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
+  theme_classic()
+
+chil_ctgplot <- ggplot(chil_ctdata, aes(x= treatment, y = change_g7, fill = treatment)) +
+  geom_boxplot() + 
+  ylab("") +
+xlab(bquote('Concentration of' ~H[2]~O[2])) +
+  labs(fill = "H202 Concentration") +
+  scale_x_discrete(labels = c('Control','Low','Mid','High')) + 
+ ylim(-15,30) +
+  ggtitle("C) C. chilensis") +
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
+  theme_classic()
+```
+
+
+Saving and viewing boxplot
+```{r}
+colour_fig1 <- cham_ctgplot + ca_ctgplot + chil_ctgplot 
+show(colour_fig1)
+
+
+ggsave(colour_fig1, filename = "colour_figure1.jpg", width = 13, height = 10)
+```
+
+Reformating boxplot into a different aestatic
+```{r}
+species_names <- list(
+  'cham'="A) C. tumidum",
+  'calli'="B) C. tuberculosum",
+  'chillensis'="C) C. chilensis"
+)
+
+species_labeller <- function(variable,value){
+  return(species_names[value])
+}
+
+
+test_ctgplot <- ggplot(ct_data, aes(x= treatment, y = change_g7, fill = treatment)) +
+  geom_boxplot(show.legend = FALSE) + 
+  ylab("Change in mean intensity") +
+ xlab(bquote('Concentration of' ~H[2]~O[2]))+ 
+  labs(fill = "H2O2 Concentration") +
+  facet_grid(. ~ species, labeller=species_labeller) +
+  scale_x_discrete(labels = c('Control','Low','Mid','High')) +
+  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
+theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 20, face = "italic"),legend.key.size = unit(2, 'cm'), axis.text.x = element_text(size = 15, angle=90, hjust=0.5), axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25), legend.text = element_text(size = 14), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20))
+```
+
+Viewing and saving recently made plot
+```{r}
+test_ctgplot
+
+ggsave(test_ctgplot, filename = "colour_figure1facet.jpg", width = 15, height = 10)
+
+```
+
+
+
+Subsetting data to compare significance between species 
+```{r}
+high_ctdata <- ct_data %>%
+  dplyr::filter(treatment == "high")
+
+mid_ctdata <- ct_data %>%
+  dplyr::filter(treatment == "mid") 
+
+low_ctdata <- ct_data %>%
+  dplyr::filter(treatment == "low") 
+
+control_ctdata <- ct_data %>%
+  dplyr::filter(treatment == "control") 
+
+```
+
+
+Testing between species for change in mean intensity significance
+```{r}
+kruskal.test(change_g7 ~ species, data = ct_data)
+dunnTest(change_g7 ~ species, data = ct_data)
+  
+kruskal.test(change_g7 ~ species, data = control_ctdata)
+dunnTest(change_g7 ~ species, data = control_ctdata)
+
+kruskal.test(change_g7 ~ species, data = low_ctdata)
+dunnTest(change_g7 ~ species, data = low_ctdata)
+
+kruskal.test(change_g7 ~ species, data = mid_ctdata)
+dunnTest(change_g7 ~ species, data = mid_ctdata)
+
+kruskal.test(change_g7 ~ species, data = high_ctdata)
+dunnTest(change_g7 ~ species, data = high_ctdata)
+```
+All species comparisons at each treatment level are significant when compared to chamberlainium
+
+Making boxplot of species by treatment 
+```{r}
+treatment_names <- list(
+  'control'="A) Control",
+  'low'="B) Low",
+  'mid'="C) Mid",
+  'high' ="D) High"
+)
+
+treatment_labeller <- function(variable,value){
+  return(treatment_names[value])
+}
+
+
+tester_colour_plot <- ggplot(ct_data, aes(x= species, y= change_g7, fill= species)) +
+    ylab("Change in mean intensity") +
+  xlab("Species") + 
+  labs(fill = "Species") + 
+  facet_grid(. ~ treatment, labeller = treatment_labeller) +
+  scale_x_discrete(labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
+  geom_boxplot(show.legend = FALSE) +
+  ylab("Change in mean intensity") +
+  xlab("Species") + 
+  labs(fill = "Species") + 
+  scale_fill_manual(values = c('dark magenta', '#E7298A', 'darkorange1'), labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
+theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 20), legend.key.size = unit(2, 'cm'), axis.text.x = element_text(size = 20, angle=90, hjust=0.5, face = "italic"), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.text = element_text(size = 14, face = "italic"), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), )
+
+```
+
+Viewing and saving previously made plot 
+```{r}
+tester_colour_plot
+
+ggsave(tester_colour_plot, filename = "colour_figure2.png", height = 10, width = 15)
+```
+
+
+
+
+
+
+
+
+
+
+
