@@ -21,7 +21,7 @@ library(tidyverse)
 library(rstatix)
 ```
 
-Load in data and rename PAM column: ***we need new dataset name here****
+Load in data and rename PAM column: 
 ```{r}
 data <- read.csv("PAM_data_DS2021.csv")
 data <- data %>%
@@ -93,7 +93,7 @@ summary(simpler_mod_WEI)
 ```
 
 
-making boxplot to visualize data for chamberlanium:
+setting up plotting data and making boxplot to visualize data for chamberlanium:
 ```{r}
 ch_f <- filter(data_to_model, species == "cham") %>%
   na.omit()
@@ -109,7 +109,7 @@ cham_plot<- ggplot(ch_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
   
 cham_plot
 ```
-boxplot to visualize calliarthron data:
+setting up plotting data and boxplot to visualize calliarthron data:
 ```{r}
 calli_f <- filter(data_to_model, species == "calli") %>%
   na.omit()
@@ -125,7 +125,7 @@ calli_plot<- ggplot(calli_f, aes(x= event, y= Y_II_PAM,fill = treatment)) +
   
 calli_plot
 ```
-boxplot for chilensis data:
+setting up plotting data and boxplot for chilensis data:
 ```{r}
 chil_f <- filter(data_to_model, species == "chillensis") %>%
   na.omit()
@@ -156,9 +156,9 @@ mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
   
 
 chamberlanium_plot <- ggplot(data = ch_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
-  geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  geom_point(aes(shape=treatment, color=treatment), size = 3) +
   ylim(0,0.4) +
-  scale_color_manual(values=c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF')) +
+  scale_color_manual(values=c('#3C507BFF', '#C7E993', '#DC7B00', '#B11901FF')) +
   scale_shape_manual(values=c(1,16,17,15)) +
   scale_fill_discrete(name = "H202 Concentration", labels = c("Control", "Low", "Mid", "High")) +
   ggtitle("A) C. tumidum") +
@@ -169,13 +169,14 @@ chamberlanium_plot <- ggplot(data = ch_for_plot, aes(x = event, y = mean, group 
   theme_classic() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   theme(legend.position = "none") +
-  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) 
+  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey") 
   
 
 chamberlanium_plot
 
 ```
-
+plot for calliarthron:
 ```{r}
 #calliarthron
 calli_simple <- filter(calli_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
@@ -186,9 +187,9 @@ mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
   
 
 calliarthron_plot <- ggplot(data = calli_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
-  geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  geom_point(aes(shape=treatment, color=treatment), size = 3) +
   ylim(0,0.4) +
-  scale_color_manual(values=c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF')) +
+  scale_color_manual(values=c('#3C507BFF', '#C7E993', '#DC7B00', '#B11901FF')) +
   scale_shape_manual(values=c(1,16,17,15)) +
   scale_fill_discrete(name = "H202 Concentration", labels = c("Control", "Low", "Mid", "High")) +
   ggtitle("B) C. tuberculosum") +
@@ -199,11 +200,12 @@ calliarthron_plot <- ggplot(data = calli_for_plot, aes(x = event, y = mean, grou
   theme_classic() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   theme(legend.position = "none") +
-  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7"))   
+  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey")   
 
 calliarthron_plot
 ```
-
+plot for chilensis:
 ```{r}
 #Chilensis
 chil_simple <- filter(chil_f, event == "pre_stress" | event == "post_stress_1" | event == "post_stress_2" | event == "post_stress_3" | event == "post_stress_4" | event == "post_stress_5" | event == "post_stress_6" | event == "post_stress_7")
@@ -214,9 +216,9 @@ mutate(mean = mean(Y_II_PAM), SE = std.error(Y_II_PAM))
   
 
 chilensis_plot <- ggplot(data = chil_for_plot, aes(x = event, y = mean, group = treatment, color = treatment)) +
-  geom_point(aes(shape=treatment, color=treatment), size = 2.5) +
+  geom_point(aes(shape=treatment, color=treatment), size = 3) +
   ylim(0,0.4) +
-  scale_color_manual(values=c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF')) +
+  scale_color_manual(values=c('#3C507BFF', '#C7E993', '#DC7B00', '#B11901FF')) +
   scale_shape_manual(values=c(1,16,17,15)) +
   scale_fill_discrete(name = "H202 Concentration", labels = c("Control", "Low", "Mid", "High")) +
   ggtitle("C) C. chilensis") +
@@ -227,7 +229,8 @@ chilensis_plot <- ggplot(data = chil_for_plot, aes(x = event, y = mean, group = 
   geom_line() +
   theme_classic() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) 
+  scale_x_discrete(labels=c("Pre-stress", "1", "2", "3", "4", "5", "6", "7")) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey") 
 
 chilensis_plot
 ```
@@ -254,7 +257,7 @@ high_data <- data_to_model %>%
 high_treatment <- ggplot(high_data, aes(x=event, y=Y_II_PAM, fill = species)) +
   geom_boxplot() +
   ylim(0,0.55) +
-  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  scale_fill_manual(values = c("#4E63AA", "#DD6E96","#FCDA61")) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
@@ -263,7 +266,8 @@ high_treatment <- ggplot(high_data, aes(x=event, y=Y_II_PAM, fill = species)) +
   ylab("YII") +
   theme(legend.position = "none") +
   scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
-  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names))
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names)) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey")
   
 
 high_treatment
@@ -276,17 +280,18 @@ mid_data <- data_to_model %>%
 
 mid_treatment <- ggplot(mid_data, aes(x=event, y=Y_II_PAM, fill = species)) +
   geom_boxplot() +
-  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  scale_fill_manual(values = c("#4E63AA", "#DD6E96","#FCDA61")) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
   ylim(0,0.55) +
   ggtitle("C) Mid") +
-  xlab("Monitoring day") +
+  xlab("") +
   ylab("YII") +
   theme(legend.position = "none") +
   scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
-  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names))
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names)) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey")
 
 mid_treatment
 
@@ -298,17 +303,18 @@ low_data <- data_to_model %>%
 
 low_treatment <- ggplot(low_data, aes(x=event, y=Y_II_PAM, fill = species)) +
   geom_boxplot() +
-  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  scale_fill_manual(values = c("#4E63AA", "#DD6E96","#FCDA61")) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
   ylim(0,0.55) +
   ggtitle("B) Low") +
-  xlab("Monitoring day") +
+  xlab("") +
   ylab("YII") +
   theme(legend.position = "none") +
   scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
-  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names))
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names)) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey")
 
 low_treatment
 
@@ -320,20 +326,23 @@ control_data <- data_to_model %>%
 
 control_treatment <- ggplot(control_data, aes(x=event, y=Y_II_PAM, fill = species)) +
   geom_boxplot() +
-  scale_fill_manual(values = c("darkmagenta", "#E7298A","darkorange1")) +
+  scale_fill_manual(values = c("#4E63AA", "#DD6E96","#FCDA61")) +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   theme (strip.text.x = element_text(size = 20, face = "italic"), axis.text.x = element_text(size = 20), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), title = element_text(size = 30)) +
   ylim(0,0.55) +
   ggtitle("A) Control") +
-  xlab("Monitoring day") +
+  xlab("") +
   ylab("YII") +
   theme(legend.position = "none") +
   scale_x_discrete(labels=c("Pre-stress", "1", "7")) +
-  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names)) 
+  facet_wrap(vars(species), strip.position = "top", labeller = labeller(species = proper_names)) +
+  geom_vline(xintercept = 1.5, linetype = "dashed", colour ="grey")
 
 
 control_treatment
+
+
 
 ```
 
