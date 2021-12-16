@@ -185,14 +185,14 @@ species_labeller <- function(variable,value){
 
 
 test_ctgplot <- ggplot(ct_data, aes(x= treatment, y = change_g7, fill = treatment)) +
+   geom_hline(yintercept = 0, linetype = "dashed", colour = "grey")+
   geom_boxplot(show.legend = FALSE) + 
-  ylab("Change in mean intensity") +
- xlab(bquote('Concentration of' ~H[2]~O[2]))+ 
-  labs(fill = "H2O2 Concentration") +
+  ylab("Change in mean colour intensity") +
+ xlab("Treatment")+
   facet_grid(. ~ species, labeller=species_labeller) +
   scale_x_discrete(labels = c('Control','Low','Mid','High')) +
-  scale_fill_manual(values = c('#3C507BFF', '#18DBC5FF', '#F7C13AFF', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
-theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 20, face = "italic"),legend.key.size = unit(2, 'cm'), axis.text.x = element_text(size = 15, angle=90, hjust=0.5), axis.title.x = element_text(size = 25), axis.title.y = element_text(size = 25), legend.text = element_text(size = 14), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20))
+  scale_fill_manual(values = c('#E4F9F5', '#C7E993', '#DC7B00', '#B11901FF'), labels = c("Control", "Low", "Mid", "High")) +
+theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 30, face = "italic"), axis.text.x = element_text(size = 20, angle=90, hjust=0.5), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), axis.text.y = element_text(size = 20))
 ```
 
 Viewing and saving recently made plot
@@ -256,17 +256,15 @@ treatment_labeller <- function(variable,value){
 
 
 tester_colour_plot <- ggplot(ct_data, aes(x= species, y= change_g7, fill= species)) +
-    ylab("Change in mean intensity") +
+    ylab("Change in mean colour intensity") +
   xlab("Species") + 
   labs(fill = "Species") + 
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey") +
   facet_grid(. ~ treatment, labeller = treatment_labeller) +
   scale_x_discrete(labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
   geom_boxplot(show.legend = FALSE) +
-  ylab("Change in mean intensity") +
-  xlab("Species") + 
-  labs(fill = "Species") + 
-  scale_fill_manual(values = c('dark magenta', '#E7298A', 'darkorange1'), labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
-theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 20), legend.key.size = unit(2, 'cm'), axis.text.x = element_text(size = 20, angle=90, hjust=0.5, face = "italic"), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), legend.text = element_text(size = 14, face = "italic"), legend.title = element_text(size = 20), axis.text.y = element_text(size = 20), )
+  scale_fill_manual(values = c('#4E63AA', '#DD6E96', '#FCDA61'), labels = c('C. tumidum','C. tuberculosum','C. chilensis')) +
+theme (panel.background = element_rect(fill = NA, color = "black"),strip.text.x = element_text(size = 30), axis.text.x = element_text(size = 20, angle=90, hjust=0.5, face = "italic"), axis.title.x = element_text(size = 30), axis.title.y = element_text(size = 30), axis.text.y = element_text(size = 20))
 
 ```
 
